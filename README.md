@@ -1,64 +1,72 @@
-#include <Servo.h>
 #include <Keypad.h>
+#include <Servo.h>
 
-Servo Motor;
-/*Enter security code here*/
-char* code = "160";
-int position = 0;
+Servo servoMotor
+//change the code here to adjust the entry password
+char* code = "6969";
+byte position = 0;
 
-/* Generate keypad data */
-const byte keypad_rows = 4;
-const byte keypad_columns = 4;
-char keys[keypad_rows][keypad_columns] = 
+//--------------- KEYPAD CODE -------------------//
+const byte rows = 4; //FOUR ROWS
+const byte cols = 3; //FOUR COLUMNS
+
+//CREATE MATRIX FOR KEYPAD
+char keys[rows][cols] =
 {
 {'1','2','3','A'},
 {'4','5','6','B'},
 {'7','8','9','C'},
-{'*','0','#','D'}
+{'*','0','#','D'},  
 };
 
-/*Declare pins for keypad*/
-byte rows[keypad_rows] = { 8, 7, 6, 5 };
-byte columns[keypad_columns] = { 4, 3, 2, 1 };
-Keypad keypad = Keypad( makeKeymap(keys), rows, columns, keypad_rows, keypad_columns);
+//DECLARE PINS FOR KEYPAD
+byte rowPins[rows] = {5, 4, 3, 2};
+byte colPins[cols] = {9, 8, 7, 6}; 
 
-/*Setup servo*/
-void setup()
-{
-Motor.attach(9);
-LockedPosition(true);
+//MAP KEYPAD 
+Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, rows, cols );
+
+
+void setup() {
+servoMotor.attach(10)
+locked(true);
 }
 
-/*constantly running - check passcode */
 void loop()
 {
-char key = keypad.getKey();
-if (key == '*' || key == '#')
-{
-position = 0;
-LockedPosition(true);
+  char key = keypad.getKey();
+  
+  //LOCK THE DOOR WITH AUXILLARY KEYS
+  if (key ==  '*' || key == '#')
+    {
+      position = 0; \\reset the code if you input a number incorrectly
+      locked(true);
+    }
+    
+  //CHECK IF PASSWORD IS INPUT CORRECTLY
+  if (key == code[position])
+    {
+      position++;
+    }
+
+  //CHECK IF FULL PASSWORD INPUTTED
+  if (position >=4)
+    {
+      locked(false);
+    }
+
+   delay(250);
 }
 
-if (key == password[position])
+//-----------LOCK FUNCTION-------//
+void locked(int lock)
 {
-position ++;
-}
-
-if (position == 3)
-{
-LockedPosition(false);
-}
-delay(100);
-}
-
-void LockedPosition(int locked)
-{
-if (locked)
-{
-Motor.write(9);
-}
-else
-{
-Motor.write(90);
-}
+  if (lock)
+  {
+    servoMotor.write(0);    
+  }
+  else
+  {
+    servoMotor.write(90)
+  }
 }
